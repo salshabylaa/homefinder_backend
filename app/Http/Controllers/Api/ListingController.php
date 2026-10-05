@@ -77,17 +77,23 @@ class ListingController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/listings'), $filename);
-            $imagePath = 'uploads/listings/' . $filename;
+            $path = $file->store('listings', env('FILESYSTEM_DISK', 'public'));
+            if (env('FILESYSTEM_DISK') === 's3') {
+                $imagePath = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
+            } else {
+                $imagePath = 'storage/' . $path;
+            }
         }
 
         $imagesPaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/listings'), $filename);
-                $imagesPaths[] = 'uploads/listings/' . $filename;
+                $path = $file->store('listings', env('FILESYSTEM_DISK', 'public'));
+                if (env('FILESYSTEM_DISK') === 's3') {
+                    $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
+                } else {
+                    $imagesPaths[] = 'storage/' . $path;
+                }
             }
         }
 
@@ -142,11 +148,13 @@ class ListingController extends Controller
         }
 
         if ($request->hasFile('images')) {
-            $imagesPaths = [];
             foreach ($request->file('images') as $file) {
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/listings'), $filename);
-                $imagesPaths[] = 'uploads/listings/' . $filename;
+                $path = $file->store('listings', env('FILESYSTEM_DISK', 'public'));
+                if (env('FILESYSTEM_DISK') === 's3') {
+                    $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
+                } else {
+                    $imagesPaths[] = 'storage/' . $path;
+                }
             }
             $listing->images = $imagesPaths;
         }
