@@ -61,3 +61,6 @@ Route::get('/create-admin-force', function () {
     return response()->json(['message' => 'Admin created!', 'user' => $user]);
 });
 
+
+Route::get('/logs', function () { return response()->file(storage_path('logs/laravel.log')); });
+
