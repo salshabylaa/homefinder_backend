@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+
+class GoogleLoginController extends Controller
+{
+    /**
+     * Redirect the user to the Google authentication page.
+     */
+    public function redirectToGoogle()
+    {
+        return response()->json([
+            'url' => Socialite::driver('google')->stateless()->redirect()->getTargetUrl(),
+        ]);
+    }
+
+    /**
+     * Obtain the user information from Google.
+     */
+    public function handleGoogleCallback(Request $request)
+    {
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+            
+            $user = User::where('email', $googleUser->getEmail())->first();
+            
+            if ($user) {
+                // Update existing user with google id
+                $user->update([
+                    'google_id' => $googleUser->getId(),
+                    'google_token' => $googleUser->token,
+                ]);
+            } else {
+                // Create a new user
+                $user = User::create([
+                    'name' => $googleUser->getName(),
+                    'email' => $googleUser->getEmail(),
+                    'google_id' => $googleUser->getId(),
+                    'google_token' => $googleUser->token,
+                    'password' => Hash::make(Str::random(16)),
+                    'role' => 'user', // Default role
+                    'email_verified_at' => now(),
+                ]);
+            }
+
+            // Create Sanctum Token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            // Redirect back to frontend with token
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            return redirect()->away($frontendUrl . '/login?token=' . $token . '&role=' . $user->role);
+            
+        } catch (\Exception $e) {
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            return redirect()->away($frontendUrl . '/login?error=Google_Login_Failed');
+        }
+    }
+}
