@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/homefinder_backend
+            git pull origin main
+            
+            # Rebuild and restart docker containers in background
+            docker compose up -d --build
+            
+            # Run Laravel migrations (Wait a few seconds for DB to be ready)
+            sleep 10
+            docker exec homefinder_app php artisan migrate --force
+            
+            # Optimize Laravel
+            docker exec homefinder_app php artisan optimize:clear
+            docker exec homefinder_app php artisan config:cache
+            docker exec homefinder_app php artisan route:cache
+            docker exec homefinder_app php artisan view:cache
