@@ -51,6 +51,7 @@ class ListingController extends Controller
 
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -107,6 +108,9 @@ class ListingController extends Controller
         ]));
 
         return response()->json(['message' => 'Properti berhasil ditambahkan', 'data' => $listing], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'S3 Error: ' . $e->getMessage()], 500);
+        }
     }
     
     public function update(Request $request, $id)

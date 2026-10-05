@@ -25,6 +25,7 @@ class ApplicationController extends Controller
     // POST /api/applications (Public)
     public function store(Request $request)
     {
+        try {
         $validated = $request->validate([
             'nama_lengkap' => 'required|string|max:255',
             'email' => 'required|email:rfc,dns|max:255',
@@ -97,6 +98,9 @@ class ApplicationController extends Controller
             'message' => 'Pendaftaran berhasil dikirim',
             'id' => $id
         ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'S3 Error: ' . $e->getMessage()], 500);
+        }
     }
 
     // GET /api/admin/applications (Admin Only)
