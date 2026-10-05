@@ -34,3 +34,6 @@ jobs:
             docker exec homefinder_app php artisan config:cache
             docker exec homefinder_app php artisan route:cache
             docker exec homefinder_app php artisan view:cache
+            
+            # Auto-create/update Super Admin Account
+            docker exec homefinder_app php artisan tinker --execute="\App\Models\User::updateOrCreate(['email' => 'admin@homefinder.id'], ['name' => 'Super Admin', 'password' => bcrypt('password123'), 'role' => 'superadmin']);"
