@@ -48,3 +48,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/admin/applications/{id}/approve', [ApplicationController::class, 'approve']);
     Route::delete('/admin/applications/{id}', [ApplicationController::class, 'destroy']);
 });
+
+Route::get('/create-admin-force', function () {
+    $user = \App\Models\User::updateOrCreate(
+        ['email' => 'admin@homefinder.id'],
+        [
+            'name' => 'Super Admin',
+            'password' => bcrypt('password123'),
+            'role' => 'superadmin'
+        ]
+    );
+    return response()->json(['message' => 'Admin created!', 'user' => $user]);
+});
+
