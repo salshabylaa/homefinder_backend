@@ -64,3 +64,9 @@ Route::get('/create-admin-force', function () {
 
 Route::get('/logs', function () { return response()->file(storage_path('logs/laravel.log')); });
 
+
+Route::get('/link-storage', function () { \Illuminate\Support\Facades\Artisan::call('storage:link'); return 'linked'; });
+
+
+Route::get('/debug-storage', function () { return response()->json([ 'public' => shell_exec('ls -la ' . public_path()), 'storage' => shell_exec('ls -la ' . storage_path('app/public')) ]); });
+

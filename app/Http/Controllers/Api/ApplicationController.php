@@ -59,7 +59,7 @@ class ApplicationController extends Controller
 
         $cvPath = null;
         if ($request->hasFile('dokumen_cv_url')) {
-            $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
             $cvPath = $request->file('dokumen_cv_url')->store('cvs', $disk, ['visibility' => 'public']);
             if ($disk === 's3') {
                 $cvPath = \Illuminate\Support\Facades\Storage::disk('s3')->url($cvPath);

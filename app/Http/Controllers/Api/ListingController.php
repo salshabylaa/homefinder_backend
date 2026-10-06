@@ -78,7 +78,7 @@ class ListingController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+            $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
             $path = $file->store('listings', $disk, ['visibility' => 'public']);
             if ($disk === 's3') {
                 $imagePath = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
@@ -90,7 +90,7 @@ class ListingController extends Controller
         $imagesPaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+                $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
             $path = $file->store('listings', $disk, ['visibility' => 'public']);
                 if ($disk === 's3') {
                     $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
@@ -155,7 +155,7 @@ class ListingController extends Controller
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+                $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
             $path = $file->store('listings', $disk, ['visibility' => 'public']);
                 if ($disk === 's3') {
                     $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
