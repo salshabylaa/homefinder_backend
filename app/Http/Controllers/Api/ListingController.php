@@ -56,9 +56,9 @@ class ListingController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:available,sold_out',
-            'image' => 'nullable|image|max:2048', // keep for backwards compatibility if needed
-            'images.*' => 'nullable|image|max:2048',
-            'images' => 'nullable|array|max:4',
+            'image' => 'nullable|image|max:5120', // keep for backwards compatibility if needed
+            'images.*' => 'nullable|image|max:5120',
+            'images' => 'nullable|array|max:5',
             'category' => 'nullable|string|max:255',
             'badge' => 'nullable|string|max:255',
             'is_rent' => 'boolean',
@@ -78,8 +78,9 @@ class ListingController extends Controller
         $imagePath = null;
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $path = $file->store('listings', env('FILESYSTEM_DISK', 'public'));
-            if (env('FILESYSTEM_DISK') === 's3') {
+            $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+            $path = $file->store('listings', $disk, ['visibility' => 'public']);
+            if ($disk === 's3') {
                 $imagePath = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
             } else {
                 $imagePath = 'storage/' . $path;
@@ -89,8 +90,9 @@ class ListingController extends Controller
         $imagesPaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $path = $file->store('listings', env('FILESYSTEM_DISK', 'public'));
-                if (env('FILESYSTEM_DISK') === 's3') {
+                $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+            $path = $file->store('listings', $disk, ['visibility' => 'public']);
+                if ($disk === 's3') {
                     $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
                 } else {
                     $imagesPaths[] = 'storage/' . $path;
@@ -125,9 +127,9 @@ class ListingController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'status' => 'required|in:available,sold_out',
-            'image' => 'nullable|image|max:2048',
-            'images.*' => 'nullable|image|max:2048',
-            'images' => 'nullable|array|max:4',
+            'image' => 'nullable|image|max:5120',
+            'images.*' => 'nullable|image|max:5120',
+            'images' => 'nullable|array|max:5',
             'category' => 'nullable|string|max:255',
             'badge' => 'nullable|string|max:255',
             'is_rent' => 'boolean',
@@ -153,8 +155,9 @@ class ListingController extends Controller
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $path = $file->store('listings', env('FILESYSTEM_DISK', 'public'));
-                if (env('FILESYSTEM_DISK') === 's3') {
+                $disk = env('AWS_BUCKET') ? 's3' : env('FILESYSTEM_DISK', 'public');
+            $path = $file->store('listings', $disk, ['visibility' => 'public']);
+                if ($disk === 's3') {
                     $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
                 } else {
                     $imagesPaths[] = 'storage/' . $path;
