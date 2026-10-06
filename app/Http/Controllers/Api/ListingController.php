@@ -79,7 +79,7 @@ class ListingController extends Controller
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
-            $path = $file->store('listings', $disk, ['visibility' => 'public']);
+            $path = $file->store('listings', $disk);
             if ($disk === 's3') {
                 $imagePath = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
             } else {
@@ -91,7 +91,7 @@ class ListingController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
-            $path = $file->store('listings', $disk, ['visibility' => 'public']);
+            $path = $file->store('listings', $disk);
                 if ($disk === 's3') {
                     $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
                 } else {
@@ -156,7 +156,7 @@ class ListingController extends Controller
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
-            $path = $file->store('listings', $disk, ['visibility' => 'public']);
+            $path = $file->store('listings', $disk);
                 if ($disk === 's3') {
                     $imagesPaths[] = \Illuminate\Support\Facades\Storage::disk('s3')->url($path);
                 } else {
