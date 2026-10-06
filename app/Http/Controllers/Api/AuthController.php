@@ -49,13 +49,46 @@ class AuthController extends Controller
             'password' => 'required',
         ]);
 
+        $key = 'login_attempts:' . md5($request->ip() . '|' . $request->email);
+        $cacheData = \Illuminate\Support\Facades\Cache::get($key, ['attempts' => 0, 'locked_until' => null]);
+
+        if ($cacheData['locked_until'] && now()->timestamp < $cacheData['locked_until']) {
+            $diff = ceil(($cacheData['locked_until'] - now()->timestamp) / 60);
+            return response()->json([
+                'message' => "Akun terkunci. Silakan coba lagi dalam {$diff} menit.", 
+                'locked' => true
+            ], 429);
+        }
+
+        if ($cacheData['attempts'] >= 3) {
+            if (!$request->captcha_answer || $request->captcha_answer != $request->captcha_expected) {
+                return response()->json([
+                    'message' => 'Silakan selesaikan CAPTCHA dengan benar karena terdeteksi banyak aktivitas mencurigakan.', 
+                    'requires_captcha' => true
+                ], 422);
+            }
+        }
+
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Kredensial yang diberikan salah.'],
-            ]);
+            $cacheData['attempts']++;
+            
+            if ($cacheData['attempts'] >= 10) {
+                $cacheData['locked_until'] = now()->addMinutes(30)->timestamp;
+            } elseif ($cacheData['attempts'] == 5) {
+                $cacheData['locked_until'] = now()->addMinutes(5)->timestamp;
+            }
+            
+            \Illuminate\Support\Facades\Cache::put($key, $cacheData, now()->addHours(1));
+
+            return response()->json([
+                'message' => 'Username atau password yang Anda masukkan salah.',
+                'requires_captcha' => $cacheData['attempts'] >= 3
+            ], 401);
         }
+
+        \Illuminate\Support\Facades\Cache::forget($key);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
