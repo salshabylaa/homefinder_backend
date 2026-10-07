@@ -38,24 +38,29 @@ class GoogleLoginController extends Controller
                     'google_token' => $googleUser->token,
                 ]);
             } else {
-                // Create a new user
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'google_token' => $googleUser->token,
-                    'password' => Hash::make(Str::random(16)),
-                    'role' => 'user', // Default role
-                    'email_verified_at' => now(),
-                ]);
+                // Not in users table. Check if they applied in applications table
+                $application = \Illuminate\Support\Facades\DB::table('applications')->where('email', $googleUser->getEmail())->first();
+                
+                $frontendUrl = env('FRONTEND_URL', 'https://account.homefinder.id');
+                
+                if ($application) {
+                    // Applied but not approved yet (or rejected)
+                    if ($application->status_crm === 'Ditolak') {
+                        return redirect()->away($frontendUrl . '/login?error=ApplicationRejected');
+                    }
+                    return redirect()->away($frontendUrl . '/login?error=WaitingForApproval');
+                } else {
+                    // Not applied at all
+                    return redirect()->away($frontendUrl . '/login?error=NotRegistered');
+                }
             }
 
             // Create Sanctum Token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             // Redirect back to frontend with token
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
-            return redirect()->away($frontendUrl . '/login?token=' . $token . '&role=' . $user->role);
+            $frontendUrl = env('FRONTEND_URL', 'https://account.homefinder.id');
+            return redirect()->away($frontendUrl . '/dashboard?token=' . $token . '&role=' . $user->role);
             
         } catch (\Exception $e) {
             $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
