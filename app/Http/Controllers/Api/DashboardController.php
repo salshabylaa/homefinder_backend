@@ -26,10 +26,10 @@ class DashboardController extends Controller
         
         $homeAdvisorAktif = User::where('role', 'homeadvisor')->count();
         
-        // Retrieve real-time visits from cache (starts with base 1200 visits to match previous dummy data, plus new visits this month)
+        // Retrieve real-time visits from cache (actual unique visits or page views tracked this month)
         $cacheKey = 'website_visits_' . date('Y_m');
         $realVisits = \Illuminate\Support\Facades\Cache::get($cacheKey, 0);
-        $totalVisits = 1200 + $realVisits;
+        $totalVisits = $realVisits;
         
         // Format the number nicely (e.g. 1,205 instead of 1.2K so increments are visible)
         $kunjungan = number_format($totalVisits, 0, ',', '.');
@@ -87,3 +87,4 @@ class DashboardController extends Controller
         ]);
     }
 }
+
