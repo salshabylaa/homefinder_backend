@@ -13,15 +13,28 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REDIRECT: ${{ secrets.GOOGLE_REDIRECT }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           password: ${{ secrets.VPS_PASSWORD }}
+          envs: GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GOOGLE_REDIRECT
           script: |
             cd /home/homefinder_backend
             git fetch origin main
             git reset --hard origin/main
+            
+            # Inject Google secrets into .env if they are provided
+            if [ ! -z "$GOOGLE_CLIENT_ID" ]; then
+              sed -i '/^GOOGLE_/d' .env
+              echo "GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID" >> .env
+              echo "GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET" >> .env
+              echo "GOOGLE_REDIRECT=$GOOGLE_REDIRECT" >> .env
+            fi
             
             # Rebuild and restart docker containers in background
             docker compose up -d --build
