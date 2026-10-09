@@ -71,6 +71,12 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
+        if ($user && $user->google_id) {
+            return response()->json([
+                'message' => 'Akun ini telah ditautkan secara eksklusif dengan Google. Silakan masuk menggunakan tombol Masuk dengan Google.'
+            ], 403);
+        }
+
         if (! $user || ! Hash::check($request->password, $user->password)) {
             $cacheData['attempts']++;
             
