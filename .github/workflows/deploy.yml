@@ -28,6 +28,7 @@ jobs:
             # Run Laravel migrations (Wait a few seconds for DB to be ready)
             sleep 10
             docker exec homefinder_app php artisan migrate --force
+            docker exec homefinder_app php artisan storage:link
             
             # Optimize Laravel
             docker exec homefinder_app php artisan optimize:clear
