@@ -77,7 +77,7 @@ $validated = $request->validate([
         $imagePath = null;
         if ($request->hasFile('image')) {
             $file = $request->file('image');
-            $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
+            $disk = 'public';
         try {
             $path = $file->store('listings', $disk);
         } catch (\Exception $e) {
@@ -93,7 +93,7 @@ $validated = $request->validate([
         $imagesPaths = [];
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
+                $disk = 'public';
         try {
             $path = $file->store('listings', $disk);
         } catch (\Exception $e) {
@@ -159,7 +159,7 @@ $validated = $request->validate([
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
-                $disk = config('filesystems.disks.s3.bucket') ? 's3' : config('filesystems.default', 'public');
+                $disk = 'public';
         try {
             $path = $file->store('listings', $disk);
         } catch (\Exception $e) {
@@ -214,6 +214,7 @@ $validated = $request->validate([
         return response()->json(['message' => 'Properti berhasil dihapus']);
     }
 }
+
 
 
 
