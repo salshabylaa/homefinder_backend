@@ -20,7 +20,8 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             cd /home/homefinder_backend
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             
             # Rebuild and restart docker containers in background
             docker compose up -d --build
