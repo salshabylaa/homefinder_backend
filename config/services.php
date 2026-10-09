@@ -36,9 +36,10 @@ return [
     ],
 
     'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_id' => env('GOOGLE_CLIENT_ID', '942369140023-55qg4qh9m54l1jr219odglvmqqsdaj71.apps.googleusercontent.com'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_REDIRECT'),
+        'redirect' => env('GOOGLE_REDIRECT', 'https://account.homefinder.id/api/auth/google/callback'),
     ],
 
 ];
+
