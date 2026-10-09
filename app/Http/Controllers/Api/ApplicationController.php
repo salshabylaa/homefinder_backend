@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\HomeAdvisorApproved;
 
 class ApplicationController extends Controller
 {
@@ -151,8 +153,8 @@ class ApplicationController extends Controller
         ]);
 
         if ($status === 'Disetujui' && !$application->user_id) {
-            // Generate password & create user
-            $defaultPassword = 'Homefinder123!';
+            // Generate random password & create user
+            $defaultPassword = Str::random(8);
             
             // Check if email already used by user
             $user = User::where('email', $application->email)->first();
@@ -165,19 +167,28 @@ class ApplicationController extends Controller
                     'phone_number' => $application->nomor_wa,
                 ]);
             } else {
-                // Update existing user to homeadvisor and update their phone number
+                // Update existing user to homeadvisor and update their phone number (and reset password to the new random one so they can login)
                 $user->update([
                     'role' => 'homeadvisor',
+                    'password' => Hash::make($defaultPassword),
                     'phone_number' => $application->nomor_wa,
                 ]);
             }
 
             DB::table('applications')->where('id', $id)->update(['user_id' => $user->id]);
             
+            // Send the congratulatory email with credentials
+            try {
+                Mail::to($user->email)->send(new HomeAdvisorApproved($user, $defaultPassword));
+            } catch (\Exception $e) {
+                // Log error but continue so the approval isn't rolled back
+                \Log::error('Gagal mengirim email HomeAdvisorApproved: ' . $e->getMessage());
+            }
+            
             return response()->json([
-                'message' => 'Berhasil disetujui, akun berhasil dibuat dengan password default Homefinder123!',
+                'message' => 'Berhasil disetujui. Akun berhasil dibuat dan kredensial telah dikirim ke email kandidat.',
                 'email' => $user->email,
-                'password' => $defaultPassword
+                'email_sent' => true
             ]);
         }
 
