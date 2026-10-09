@@ -93,7 +93,7 @@
             <p><strong>Penting:</strong> Demi keamanan akun Anda, mohon segera mengganti password Anda setelah pertama kali berhasil login ke dalam sistem.</p>
             
             <div class="button-container">
-                <a href="{{ config('app.url') }}/login" class="button">Login Sekarang</a>
+                <a href="{{ env('FRONTEND_URL', 'https://account.homefinder.id') }}/login" class="button">Login Sekarang</a>
             </div>
             
             <p>Jika Anda memiliki pertanyaan, jangan ragu untuk membalas email ini atau menghubungi tim support kami.</p>
@@ -106,3 +106,4 @@
     </div>
 </body>
 </html>
+
