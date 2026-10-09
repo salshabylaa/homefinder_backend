@@ -12,7 +12,7 @@ services:
       - "80:80"
     environment:
       - APP_ENV=production
-      - APP_DEBUG=false
+      - APP_DEBUG=true
     env_file:
       - .env
     volumes:
